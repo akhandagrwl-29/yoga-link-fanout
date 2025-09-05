@@ -50,11 +50,11 @@ func main() {
 	fmt.Printf("Found YtUrl: %t\n", result.Debug.FoundYtUrl)
 	recipients := []string{
 		"coding.akhandagarwal6174@gmail.com",
+		"krishnapriya24698@gmail.com",
+		"kkpmzp2000@gmail.com",
+		"badriprasad7571@gmail.com",
+		"murali.kummitha@gmail.com",
 		"akhand.yogaeveryday@gmail.com",
-		// "krishnapriya24698@gmail.com",
-		// "kkpmzp2000@gmail.com",
-		// "badriprasad7571@gmail.com",
-		// "murali.kummitha@gmail.com",
 	}
 	for _, email := range recipients {
 		err = sendEmail(result.ExtractedURL, result.VideoID, email)
