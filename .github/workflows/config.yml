@@ -1,0 +1,24 @@
+name: Daily YouTube Email
+on:
+  schedule:
+    - cron: "30 0 * * *" # 6 AM IST daily
+  workflow_dispatch: # Allows manual trigger for testing
+
+jobs:
+  send-email:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.21"
+
+      - name: Run script
+        run: go run main.go
+        env:
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          BASE_URL: ${{secrets.BASE_URL}}
+          # Add other secrets as needed
