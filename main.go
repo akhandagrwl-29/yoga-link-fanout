@@ -1,21 +1,40 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
-	"net/smtp"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 )
 
-func main() {
-	// URL to make GET request to
+// Resend email structure
+type ResendEmail struct {
+	From    string   `json:"from"`
+	To      []string `json:"to"`
+	Subject string   `json:"subject"`
+	HTML    string   `json:"html"`
+	Text    string   `json:"text,omitempty"`
+}
 
+// Resend response structure
+type ResendResponse struct {
+	ID string `json:"id"`
+}
+
+type ResendError struct {
+	Message string `json:"message"`
+	Name    string `json:"name"`
+}
+
+func main() {
 	url := os.Getenv("BASE_URL")
 
-	// Make the GET request
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("Error making GET request: %v\n", err)
@@ -23,13 +42,11 @@ func main() {
 	}
 	defer resp.Body.Close()
 
-	// Print status information
 	fmt.Printf("Status: %s\n", resp.Status)
 	fmt.Printf("Status Code: %d\n", resp.StatusCode)
 	fmt.Printf("Content-Type: %s\n", resp.Header.Get("Content-Type"))
 	fmt.Println("---")
 
-	// Read and print the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading response body: %v\n", err)
@@ -48,21 +65,15 @@ func main() {
 	fmt.Printf("HTML Length: %d\n", result.Debug.HTMLLength)
 	fmt.Printf("Found Watch Endpoint: %t\n", result.Debug.FoundWatchEndpoint)
 	fmt.Printf("Found YtUrl: %t\n", result.Debug.FoundYtUrl)
-	recipients := []string{
-		"coding.akhandagarwal6174@gmail.com",
-		"krishnapriya24698@gmail.com",
-		"kkpmzp2000@gmail.com",
-		"badriprasad7571@gmail.com",
-		"murali.kummitha@gmail.com",
-		"akhand.yogaeveryday@gmail.com",
+
+	recipientsString := os.Getenv("EMAIL_RECIPIENTS")
+	recipients := strings.Split(recipientsString, ",")
+
+	err = sendEmail(result.ExtractedURL, recipients)
+	if err != nil {
+		fmt.Printf("error while sending email: %+v", err)
 	}
-	for _, email := range recipients {
-		err = sendEmail(result.ExtractedURL, result.VideoID, email)
-		if err != nil {
-			fmt.Printf("error while sending email: %+v", err)
-		}
-		fmt.Printf("Email sent to : %s\n", email)
-	}
+	fmt.Printf("Email sent to : %+v\n", recipients)
 }
 
 type ExtractionResult struct {
@@ -133,64 +144,141 @@ func extractYouTubeURL(html string) ExtractionResult {
 	}
 }
 
-func sendEmail(youtubeURL, videoID string, recipient string) error {
-	// Email configuration - you'll need to set these environment variables
-	smtpServer := os.Getenv("SMTP_SERVER") // e.g., "smtp.gmail.com"
-	smtpPort := os.Getenv("SMTP_PORT")     // e.g., "587"
+func sendEmail(youtubeURL string, recipient []string) error {
+	// Get Resend API key from environment
+	apiKey := os.Getenv("API_KEY")
+	if apiKey == "" {
+		return fmt.Errorf("RESEND_API_KEY environment variable is not set")
+	}
 
+	senderEmail := os.Getenv("EMAIL_USER")
+	senderName := os.Getenv("EMAIL_SENDER_NAME")
+	if senderEmail == "" {
+		return fmt.Errorf("EMAIL_USER environment variable is not set")
+	}
+
+	// Special URL for Sunday
 	if time.Now().Weekday() == 0 {
 		youtubeURL = "https://me.habuild.in/sunday"
 	}
 
 	format := map[int]string{
-		0: "Surya Namaskar & Breathing",
-		1: "Light Yoga & Breathing",
-		2: "Lower Body",
-		3: "Upper Body",
-		4: "Core & Laughter",
-		5: "Mobility & Flexibility",
-		6: "Stamina & Meditation",
+		0: "Surya Namaskar & Breathing", // Sunday
+		1: "Light Yoga & Breathing",     // Monday
+		2: "Lower Body",                 // Tuesday
+		3: "Upper Body",                 // Wednesday
+		4: "Core & Laughter",            // Thursday
+		5: "Mobility & Flexibility",     // Friday
+		6: "Stamina & Meditation",       // Saturday
 	}
 
-	// Default values if environment variables are not set
-	if smtpServer == "" {
-		smtpServer = "smtp.gmail.com"
-	}
-	if smtpPort == "" {
-		smtpPort = "587"
+	email := ResendEmail{
+		From:    fmt.Sprintf("%s <%s>", senderName, senderEmail),
+		To:      recipient,
+		Subject: fmt.Sprintf("%s YOGA Link", time.Now().Weekday()),
 	}
 
-	senderPassword := os.Getenv("EMAIL_PASSWORD")
-	senderEmail := "akhand.yogaeveryday@gmail.com"
+	email.HTML = fmt.Sprintf(`
+		<!DOCTYPE html>
+		<html>
+		<head>
+			<meta charset="utf-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Daily Yoga Session</title>
+		</head>
+		<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+			<div style="text-align: center; margin-bottom: 30px;">
+				<h1 style="color: #4CAF50; margin-bottom: 10px;">🧘‍♀️ Daily Yoga Session</h1>
+				<p style="color: #666; font-size: 14px;">%s</p>
+			</div>
 
-	// Email content
-	subject := fmt.Sprintf("%s YOGA Link <> Akhand", time.Now().Weekday())
-	body := fmt.Sprintf(`Hi,
+			<div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+				<p style="margin-top: 0;">Hi there!</p>
+				<p>Please find your today's YOGA link.</p>
+
+				<div style="background-color: #e8f5e8; padding: 15px; border-radius: 6px; margin: 15px 0;">
+					<p style="margin: 0; font-weight: bold; color: #2d5a2d;">📅 Available Time Slots:</p>
+					<p style="margin: 5px 0 0 0;">
+						<strong>Morning:</strong> 6:30 AM, 7:30 AM, 8:30 AM<br>
+						<strong>Evening:</strong> 5:00 PM, 6:00 PM, 7:00 PM
+					</p>
+				</div>
+			</div>
+
+			<div style="background-color: #4CAF50; color: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+				<h3 style="margin: 0 0 10px 0;">Today's Format: %s</h3>
+				<a href="%s" style="display: inline-block; background-color: white; color: #4CAF50; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+					🔗 Join Yoga Session
+				</a>
+			</div>
+
+			<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+				<p style="margin-bottom: 5px;">Best regards,</p>
+				<p style="font-weight: bold; color: #4CAF50; font-size: 18px; margin: 0;">Akhand</p>
+				<p style="font-size: 12px; color: #666; margin-top: 15px;">
+					Stay healthy and mindful! 🙏<br>
+					This is your daily yoga reminder.
+				</p>
+			</div>
+		</body>
+		</html>
+	`, time.Now().Format("Monday, January 2, 2006"), format[int(time.Now().Weekday())], youtubeURL)
+
+	email.Text = fmt.Sprintf(`Daily Yoga Session - %s
+
+Hi there!
 
 Please find your today's YOGA link.
-Choose from time slots: 6:30 AM, 7:30 AM, and 8:30 AM, as well as 5:00 PM, 6:00 PM, and 7:00 PM.
+
+Available Time Slots:
+Morning: 6:30 AM, 7:30 AM, 8:30 AM
+Evening: 5:00 PM, 6:00 PM, 7:00 PM
 
 Today's Format: %s
 
 Link: %s
 
 Best regards,
-Akhand`, format[int(time.Now().Weekday())], youtubeURL)
+Akhand
 
-	// Compose message
-	message := []byte(fmt.Sprintf("To: %s\r\nSubject: %s\r\n\r\n%s\r\n", recipient, subject, body))
+Stay healthy and mindful! 🙏
+This is your daily yoga reminder.`, time.Now().Format("Monday, January 2, 2006"), format[int(time.Now().Weekday())], youtubeURL)
 
-	// SMTP authentication
-	auth := smtp.PlainAuth("", senderEmail, senderPassword, smtpServer)
+	// Convert to JSON
+	jsonData, err := json.Marshal(email)
+	if err != nil {
+		return fmt.Errorf("failed to marshal email: %v", err)
+	}
 
-	// Send email
-	err := smtp.SendMail(
-		smtpServer+":"+smtpPort,
-		auth,
-		senderEmail,
-		[]string{recipient},
-		message,
-	)
+	req, err := http.NewRequest("POST", "https://api.resend.com/emails", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
 
-	return err
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to send request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Handle response
+	if resp.StatusCode == 200 {
+		var resendResp ResendResponse
+		if err := json.NewDecoder(resp.Body).Decode(&resendResp); err != nil {
+			log.Printf("Email sent to %s, but couldn't parse response", recipient)
+		} else {
+			log.Printf("Email sent successfully to %s (ID: %s)", recipient, resendResp.ID)
+		}
+		return nil
+	} else {
+		var resendErr ResendError
+		if err := json.NewDecoder(resp.Body).Decode(&resendErr); err != nil {
+			return fmt.Errorf("Resend returned status %d", resp.StatusCode)
+		}
+		return fmt.Errorf("Resend error (%d): %s", resp.StatusCode, resendErr.Message)
+	}
 }
