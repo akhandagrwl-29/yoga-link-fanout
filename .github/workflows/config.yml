@@ -1,7 +1,7 @@
 name: Daily YouTube Email
 on:
   schedule:
-    - cron: "30 0 * * *" # 6 AM IST daily
+    - cron: "15 0 * * *"
   workflow_dispatch: # Allows manual trigger for testing
 
 jobs:
@@ -19,6 +19,9 @@ jobs:
       - name: Run script
         run: go run main.go
         env:
-          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          API_KEY: ${{ secrets.API_KEY }}
           BASE_URL: ${{secrets.BASE_URL}}
+          EMAIL_USER: ${{ secrets.EMAIL_USER }}
+          EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
+          EMAIL_SENDER_NAME: ${{ secrets.EMAIL_SENDER_NAME }}
           # Add other secrets as needed
