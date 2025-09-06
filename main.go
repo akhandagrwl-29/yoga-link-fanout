@@ -54,9 +54,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Response Body:")
-	fmt.Println(string(body))
-
 	// Extract YouTube URL from the HTML response
 	result := extractYouTubeURL(string(body))
 	fmt.Println("\n--- YouTube URL Extraction ---")
@@ -74,7 +71,7 @@ func main() {
 	if err != nil {
 		fmt.Printf("error while sending email: %+v", err)
 	}
-	fmt.Printf("Email sent to : %+v\n", recipients)
+	// fmt.Printf("Email sent to : %+v\n", recipients)
 }
 
 type ExtractionResult struct {
@@ -148,16 +145,16 @@ func extractYouTubeURL(html string) ExtractionResult {
 func sendEmail(youtubeURL string, recipient []string) error {
 	// Get Resend API key from environment
 	apiKey := os.Getenv("API_KEY")
-	fmt.Printf("API_KEY: %s\n", apiKey[:5])
+	// fmt.Printf("API_KEY: %s\n", apiKey[:5])
 	if apiKey == "" {
 		return fmt.Errorf("RESEND_API_KEY environment variable is not set")
 	}
 
 	senderEmail := os.Getenv("EMAIL_USER")
-	fmt.Printf("EMAIL_USER: %s\n", senderEmail[:5])
+	// fmt.Printf("EMAIL_USER: %s\n", senderEmail[:5])
 
 	senderName := os.Getenv("EMAIL_SENDER_NAME")
-	fmt.Printf("EMAIL_SENDER_NAME: %s\n", senderName[:5])
+	// fmt.Printf("EMAIL_SENDER_NAME: %s\n", senderName[:5])
 	if senderEmail == "" {
 		return fmt.Errorf("EMAIL_USER environment variable is not set")
 	}
@@ -276,7 +273,7 @@ This is your daily yoga reminder.`, time.Now().Format("Monday, January 2, 2006")
 		if err := json.NewDecoder(resp.Body).Decode(&resendResp); err != nil {
 			log.Printf("Email sent to %s, but couldn't parse response", recipient)
 		} else {
-			log.Printf("Email sent successfully to %s (ID: %s)", recipient, resendResp.ID)
+			log.Printf("Email sent successfully")
 		}
 		return nil
 	} else {
