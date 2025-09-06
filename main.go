@@ -35,6 +35,7 @@ type ResendError struct {
 func main() {
 	url := os.Getenv("BASE_URL")
 
+	fmt.Printf("BASE_URL: %s\n", url[:5])
 	resp, err := http.Get(url)
 	if err != nil {
 		fmt.Printf("Error making GET request: %v\n", err)
@@ -52,6 +53,9 @@ func main() {
 		fmt.Printf("Error reading response body: %v\n", err)
 		os.Exit(1)
 	}
+
+	fmt.Println("Response Body:")
+	fmt.Println(string(body))
 
 	// Extract YouTube URL from the HTML response
 	result := extractYouTubeURL(string(body))
@@ -144,12 +148,16 @@ func extractYouTubeURL(html string) ExtractionResult {
 func sendEmail(youtubeURL string, recipient []string) error {
 	// Get Resend API key from environment
 	apiKey := os.Getenv("API_KEY")
+	fmt.Printf("API_KEY: %s\n", apiKey[:5])
 	if apiKey == "" {
 		return fmt.Errorf("RESEND_API_KEY environment variable is not set")
 	}
 
 	senderEmail := os.Getenv("EMAIL_USER")
+	fmt.Printf("EMAIL_USER: %s\n", senderEmail[:5])
+
 	senderName := os.Getenv("EMAIL_SENDER_NAME")
+	fmt.Printf("EMAIL_SENDER_NAME: %s\n", senderName[:5])
 	if senderEmail == "" {
 		return fmt.Errorf("EMAIL_USER environment variable is not set")
 	}
