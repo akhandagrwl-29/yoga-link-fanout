@@ -53,9 +53,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Println("Response Body:")
-	fmt.Println(string(body))
-
 	// Extract YouTube URL from the HTML response
 	result := extractYouTubeURL(string(body))
 	fmt.Println("\n--- YouTube URL Extraction ---")
