@@ -177,7 +177,7 @@ func sendEmail(youtubeURL string, recipient []string) error {
 	email := ResendEmail{
 		From:    fmt.Sprintf("%s <%s>", senderName, senderEmail),
 		To:      recipient,
-		Subject: fmt.Sprintf("%s YOGA Link", time.Now().Weekday()),
+		Subject: fmt.Sprintf("✨ Navratri Special: %s YOGA Link", time.Now().Weekday()),
 	}
 
 	email.HTML = fmt.Sprintf(`
