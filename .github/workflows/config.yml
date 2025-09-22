@@ -1,7 +1,9 @@
 name: Daily YouTube Email
 on:
+  repository_dispatch:
+    types: [cron-trigger]
   schedule:
-    - cron: "30 0 * * *"
+    - cron: "15 0 * * *"
   workflow_dispatch: # Allows manual trigger for testing
 
 jobs:
