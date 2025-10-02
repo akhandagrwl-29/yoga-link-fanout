@@ -170,7 +170,6 @@ func extractYouTubeURL(html string) ExtractionResult {
 }
 
 func sendEmail(youtubeURL string, recipient []string) error {
-	return nil
 	// Get Resend API key from environment
 	apiKey := os.Getenv("API_KEY")
 	// fmt.Printf("API_KEY: %s\n", apiKey[:5])
