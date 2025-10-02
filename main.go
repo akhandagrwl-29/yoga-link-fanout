@@ -174,6 +174,28 @@ func sendEmail(youtubeURL string, recipient []string) error {
 		6: "Stamina & Meditation",       // Saturday
 	}
 
+	colors := map[int]string{
+		0: "#EF7722", // Sunday -
+		1: "#3D8D7A", // Monday -
+		2: "#09122C", // Tuesday -
+		3: "#000957", // Wednesday -
+		4: "#7F55B1", // Thursday -
+		5: "#DC143C", // Friday
+		6: "#3E1E68", // Saturday -
+	}
+	themeColor := colors[int(time.Now().Weekday())]
+
+	bgColors := map[int]string{
+		0: "#0BA6DF", // Sunday -
+		1: "#A3D1C6", // Monday -
+		2: "#E17564", // Tuesday -
+		3: "#FFEB00", // Wednesday -
+		4: "#FFE1E0", // Thursday -
+		5: "#FDEBD0", // Friday -
+		6: "#FFACAC", // Saturday -
+	}
+	bgColour := bgColors[int(time.Now().Weekday())]
+
 	email := ResendEmail{
 		From:    fmt.Sprintf("%s <%s>", senderName, senderEmail),
 		To:      recipient,
@@ -181,50 +203,50 @@ func sendEmail(youtubeURL string, recipient []string) error {
 	}
 
 	email.HTML = fmt.Sprintf(`
-		<!DOCTYPE html>
-		<html>
-		<head>
-			<meta charset="utf-8">
-			<meta name="viewport" content="width=device-width, initial-scale=1.0">
-			<title>Daily Yoga Session</title>
-		</head>
-		<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-			<div style="text-align: center; margin-bottom: 30px;">
-				<h1 style="color: #4CAF50; margin-bottom: 10px;">🧘‍♀️ Daily Yoga Session</h1>
-				<p style="color: #666; font-size: 14px;">%s</p>
-			</div>
-
-			<div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
-				<p style="margin-top: 0;">Hi there!</p>
-				<p>Please find your today's YOGA link.</p>
-
-				<div style="background-color: #e8f5e8; padding: 15px; border-radius: 6px; margin: 15px 0;">
-					<p style="margin: 0; font-weight: bold; color: #2d5a2d;">📅 Available Time Slots:</p>
-					<p style="margin: 5px 0 0 0;">
-						<strong>Morning:</strong> 6:30 AM, 7:30 AM, 8:30 AM<br>
-						<strong>Evening:</strong> 5:00 PM, 6:00 PM, 7:00 PM
-					</p>
-				</div>
-			</div>
-
-			<div style="background-color: #4CAF50; color: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-				<h3 style="margin: 0 0 10px 0;">Today's Format: %s</h3>
-				<a href="%s" style="display: inline-block; background-color: white; color: #4CAF50; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
-					🔗 Join Yoga Session
-				</a>
-			</div>
-			
-			<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
-				<p style="margin-bottom: 5px;">Best regards,</p>
-				<p style="font-weight: bold; color: #4CAF50; font-size: 18px; margin: 0;">Akhand</p>
-				<p style="font-size: 12px; color: #666; margin-top: 15px;">
-					Stay healthy and mindful! 🙏<br>
-					This is your daily yoga reminder.
+	<!DOCTYPE html>
+	<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>Daily Yoga Session</title>
+	</head>
+	<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+		<div style="text-align: center; margin-bottom: 30px;">
+			<h1 style="color: %[2]s; margin-bottom: 10px;">🧘‍♀️ Daily Yoga Session</h1>
+			<p style="color: #666; font-size: 14px;">%s</p>
+		</div>
+	
+		<div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0;">
+			<p style="margin-top: 0;">Hi there!</p>
+			<p>Please find your today's YOGA link.</p>
+	
+			<div style="background-color: %[5]s; padding: 15px; border-radius: 6px; margin: 15px 0;">
+				<p style="margin: 0; font-weight: bold; color: %[2]s;">📅 Available Time Slots:</p>
+				<p style="margin: 5px 0 0 0;">
+					<strong>Morning:</strong> 6:30 AM, 7:30 AM, 8:30 AM<br>
+					<strong>Evening:</strong> 5:00 PM, 6:00 PM, 7:00 PM
 				</p>
 			</div>
-		</body>
-		</html>
-	`, time.Now().Format("Monday, January 2, 2006"), format[int(time.Now().Weekday())], youtubeURL)
+		</div>
+	
+		<div style="background-color: %[2]s; color: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
+			<h3 style="margin: 0 0 10px 0;">Today's Format: %s</h3>
+			<a href="%s" style="display: inline-block; background-color: white; color: %[2]s; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
+				🔗 Join Yoga Session
+			</a>
+		</div>
+	
+		<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+			<p style="margin-bottom: 5px;">Best regards,</p>
+			<p style="font-weight: bold; color: %[2]s; font-size: 18px; margin: 0;">Akhand</p>
+			<p style="font-size: 12px; color: #666; margin-top: 15px;">
+				Stay healthy and mindful! 🙏<br>
+				This is your daily yoga reminder.
+			</p>
+		</div>
+	</body>
+	</html>
+	`, time.Now().Format("Monday, January 2, 2006"), themeColor, format[int(time.Now().Weekday())], youtubeURL, bgColour)
 
 	email.Text = fmt.Sprintf(`Daily Yoga Session - %s
 
