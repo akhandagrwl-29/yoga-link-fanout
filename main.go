@@ -177,7 +177,7 @@ func sendEmail(youtubeURL string, recipient []string) error {
 	email := ResendEmail{
 		From:    fmt.Sprintf("%s <%s>", senderName, senderEmail),
 		To:      recipient,
-		Subject: fmt.Sprintf("✨ Navratri Special: %s YOGA Link", time.Now().Weekday()),
+		Subject: fmt.Sprintf("%s YOGA Link", time.Now().Weekday()),
 	}
 
 	email.HTML = fmt.Sprintf(`
@@ -213,14 +213,7 @@ func sendEmail(youtubeURL string, recipient []string) error {
 					🔗 Join Yoga Session
 				</a>
 			</div>
-
-            <div style="background-color: #FF7043; color: white; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-				<h3 style="margin: 0 0 10px 0;">✨ Navratri Special: Garba with Trishala</h3>
-				<a href="https://join.habuild.in/c/Garba_Live" style="display: inline-block; background-color: white; color: #FF7043; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 10px;">
-				💃 Join Garba Live
-				</a>
-			</div>
-
+			
 			<div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
 				<p style="margin-bottom: 5px;">Best regards,</p>
 				<p style="font-weight: bold; color: #4CAF50; font-size: 18px; margin: 0;">Akhand</p>
