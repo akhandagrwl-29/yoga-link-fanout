@@ -67,7 +67,7 @@ func main() {
 	recipientsString := os.Getenv("EMAIL_RECIPIENTS")
 	recipients := strings.Split(recipientsString, ",")
 
-	err = sendEmail(result.ExtractedURL, recipients)
+	// err = sendEmail(result.ExtractedURL, recipients)
 	if err != nil {
 		fmt.Printf("error while sending email: %+v", err)
 	}
