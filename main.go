@@ -72,6 +72,33 @@ func main() {
 		fmt.Printf("error while sending email: %+v", err)
 	}
 	// fmt.Printf("Email sent to : %+v\n", recipients)
+	logsFile := "logs.txt"
+
+	// Load IST timezone
+	loc, err := time.LoadLocation("Asia/Kolkata")
+	if err != nil {
+		fmt.Printf("Error loading IST timezone: %v\n", err)
+		return
+	}
+
+	// Get current IST time in human-readable format
+	currentTime := time.Now().In(loc).Format("2006-01-02 15:04:05")
+
+	// Open file in append mode, create if not exists
+	f, err := os.OpenFile(logsFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		fmt.Printf("Error opening file: %v\n", err)
+		return
+	}
+	defer f.Close()
+
+	// Append the timestamp with a newline
+	if _, err := f.WriteString(currentTime + "\n"); err != nil {
+		fmt.Printf("Error writing to file: %v\n", err)
+		return
+	}
+
+	fmt.Printf("Appended last processed time (IST): %s\n", currentTime)
 }
 
 type ExtractionResult struct {
