@@ -2,7 +2,20 @@ name: Daily YouTube Email
 on:
   repository_dispatch:
     types: [cron-trigger]
-  workflow_dispatch: # Allows manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      dispatch_id:
+        description: An ID used to identify the workflow run
+        required: true
+        type: string
+      wait_time:
+        description: Time to wait before echoing
+        required: true
+        type: string
+      message:
+        description: Message to echo after waiting
+        required: true
+        type: string
 
 jobs:
   send-email:
@@ -33,3 +46,16 @@ jobs:
           git add logs.txt
           git diff --quiet && git diff --staged --quiet || git commit -m "Update last email timestamp"
           git push
+
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch ${{ inputs.dispatch_id }}
+        run: echo "Dispatch ${{ inputs.dispatch_id }}"
+  wait-and-echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait
+        run: sleep ${{ inputs.wait_time }}
+      - name: Echo
+        run: echo "${{ inputs.message }}"
